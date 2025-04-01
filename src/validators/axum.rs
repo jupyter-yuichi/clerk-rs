@@ -157,13 +157,21 @@ where
 				Err(error) => {
 					match error {
 						ClerkError::Unauthorized(msg) => {
-							return Ok(Response::builder().status(StatusCode::UNAUTHORIZED).body(Body::from(msg)).unwrap())
+							let msg = serde_json::to_string(&serde_json::json!({
+								"Error": msg.strip_prefix("Error: ").unwrap_or(msg.as_str()),
+							}))
+							.unwrap_or(msg);
+							return Ok(Response::builder().status(StatusCode::UNAUTHORIZED).body(Body::from(msg)).unwrap());
 						}
 						ClerkError::InternalServerError(msg) => {
+							let msg = serde_json::to_string(&serde_json::json!({
+								"Error": msg.strip_prefix("Error: ").unwrap_or(msg.as_str()),
+							}))
+							.unwrap_or(msg);
 							return Ok(Response::builder()
 								.status(StatusCode::INTERNAL_SERVER_ERROR)
 								.body(Body::from(msg))
-								.unwrap())
+								.unwrap());
 						}
 					};
 				}
